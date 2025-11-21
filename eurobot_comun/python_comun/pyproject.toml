@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python_comun"
+version = "0.1.0"
+description = "Ejemplo básico de biblioteca Python"
+authors = [
+  {name = "Tu Nombre"}
+]
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = ["src"]

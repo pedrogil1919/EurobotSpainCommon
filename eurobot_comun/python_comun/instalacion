@@ -1,0 +1,4 @@
+Para instalar la librería, desde el directorio donde se encuentra el archivo pyproject.toml, ejecutar:
+pip3 install -e .
+
+La opción -e es para permitir desarrollar la librería a la vez que la utilizamos en otros proyectos.
