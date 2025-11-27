@@ -15,4 +15,6 @@ exportadas son:
 
 from .desplazamiento_tabla import Desplazamiento
 from .formulario_seleccion import abrir_seleccion
+from .funciones_comunes import maximizar_ventana
 from .tabla import Tabla
+from .ventana_inicio import crear_ventana_inicio
