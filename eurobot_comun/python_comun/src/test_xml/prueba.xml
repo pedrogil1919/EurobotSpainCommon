@@ -1,0 +1,14 @@
+<prueba>
+    <elemento1>
+        <campo TAG1="1" TAG2="A"/>
+        <campo TAG1="2" TAG2="B"/>
+        <campo TAG1="3"/>
+        <campo TAG1="4" TAG2="C"/>
+        <elemento2>
+            <campo TAG2="A"/>
+            <campo TAG2="B"/>
+            <campo TAG2="C"/>
+            <campo TAG1="D"/>
+        </elemento2>
+    </elemento1>
+</prueba>
