@@ -121,52 +121,90 @@ def convertir_tipo(valor, formato):
         return valor
 
 
-def convertir_tipo_inv(valor):
-    if isinstance(valor, bool):
+def convertir_tipo_inv(valor, formato):
+    if formato == 'b':
         return bool2txt(valor)
-    if isinstance(valor, float):
-        return "%f.1" % valor
+    elif formato == 's':
+        return valor
     return str(valor)
 
 
-def aux_atributos_xml(elemento, atributos, formatos):
+def aux_atributos_xml(elemento, atributos, formatos=None, valores=None):
     """
-    Devuelve los atributos solicitados de un elemento.
+    Devuelve o actualiza los atributos solicitados de un elemento.
 
     Argumentos:
-    - elemento: ElementTree del elemento sobre el cual queremos obtener sus
-      atributos.
+    - elemento: ElementTree del elemento sobre el cual queremos obtener o
+      actualizar sus atributos.
     - atributos, formatos: ver función leer_atributos_xml
+    - valores: si es None, la función devuelve los atributos solicitados.
+      Si es una lista de la misma longitud que atributos, actualiza los
+      atributos con la lista indicada. Si la longitud de valores no es la misma
+      que la de atributos, lanza una excepción de tipo ValueError.
 
     """
-    N = len(atributos)
+    # Comprobamos si nos están pidiendo más de un atributo.
+    if isinstance(atributos, (list, tuple)):
+        N = len(atributos)
+    else:
+        N = 1
+
     # Comprobamos el valor de la variable formato.
     if formatos is None:
+        # Si no nos pasan ningún formato, se entiende que todas son string y
+        # no hay que hacer ninguna conversión.
         formatos = "s" * N
-    if not isinstance(formatos, str):
-        formatos = "s" * N
-    if len(formatos) == 1:
+    elif not isinstance(formatos, str):
+        raise ValueError("Formato de atributos xml incorrecto.")
+    elif len(formatos) == 1:
+        # Sí solo nos pasan un dato, se entiende que todos los atributos
+        # tienen el mismo formato.
         formatos = formatos * N
-    if len(formatos) < N:
+    elif len(formatos) < N:
+        # Si la longitud de formatos es menor que la de atributos, los que
+        # faltan se supone que son string.
         formatos = formatos + "s" * (N - len(formatos))
 
+    # Comprobamos si debemos devolver los atributos, o actualizarlos.
+    if valores is None:
+        # En este caso, nos están solicitando los valores actuales de los
+        # atributos.
+        if not isinstance(atributos, (list, tuple)):
+            # Sí solo nos piden uno y no es una lista, lo devolvemos como una
+            # única variable.
+            valor = elemento.attrib[atributos]
+            lista = convertir_tipo(valor, formatos[0])
+        else:
+            # Si nos mandan una lista, aunque sea de un sólo elemento, lo
+            # devolvemos como un diccionario.
+            lista = {}
+            for atributo, formato in zip(atributos, formatos):
+                valor = elemento.attrib[atributo]
+                valor = convertir_tipo(valor, formato)
+                lista[atributo] = valor
+        return lista
+    # En caso contario, nos solicitan actualizar los valores y guardarlos en el
+    # archivo xml.
+    # Comprobamos si nos han pasado una lista, o solo un valor.
+    if not isinstance(valores, (list, tuple)):
+        valores = (valores,)
+    M = len(valores)
+    # Comprobamos que las longitudes coincidan.
+    if M != N:
+        raise ValueError(
+            "Lista de valores no coincide con lista de atributos xml.")
     if not isinstance(atributos, (list, tuple)):
-        # Sí solo nos piden uno, lo devolvemos como una única variable.
-        valor = elemento.attrib[atributos]
-        lista = convertir_tipo(valor, formatos[0])
-    else:
-        # Si nos piden más de un atributo, los colocamos en un diccionario.
-        lista = {}
-        for atributo, formato in zip(atributos, formatos):
-            valor = elemento.attrib[atributo]
-            valor = convertir_tipo(valor, formato)
-            lista[atributo] = valor
-    return lista
-
+        atributos = (atributos,)
+    for atributo, formato, valor in zip(atributos, formatos, valores):
+        # Convertimos el formato del archivo.
+        valor = convertir_tipo_inv(valor, formato)
+        # Y lo guardamos en la lista de el elemento.
+        elemento.attrib[atributo] = valor
 
 ###############################################################################
 # FUNCIONES DE LECTURA DE ARCHIVOS XML GENERALES
 ###############################################################################
+
 
 @captura_error
 def leer_atributos_xml(elementos, atributos, formatos=None):
@@ -195,6 +233,7 @@ def leer_atributos_xml(elementos, atributos, formatos=None):
 ###########################################################################
 # Archivo prueba.xml
 ###########################################################################
+<?xml version='1.0' encoding='utf-8'?>
 <prueba>
     <elemento1 TAG1="24" TAG2="hola">
         <elemento2 TAG3="otro" TAG7="más">
@@ -242,6 +281,25 @@ print("t6: ", t6)
         raiz = raiz.find(etiqueta)
     lista = aux_atributos_xml(raiz, atributos, formatos)
     return lista
+
+
+@captura_error
+def guardar_atributos_xml(elementos, atributos, valores, formatos=None):
+    """
+    Actualiza los atributos de un elemento, y lo guarda en el archivo xml
+
+    """
+    raiz = archivo_xml.getroot()
+    # Comprobamos si la raíz es una lista de etiquetas:
+    if not isinstance(elementos, (list, tuple)):
+        elementos = (elementos,)
+    # Descendemos hasta el elemento del nivel indicado.
+    for etiqueta in elementos:
+        raiz = raiz.find(etiqueta)
+
+    aux_atributos_xml(raiz, atributos, formatos, valores)
+    # Y finalmente guardamos el archivo.
+    archivo_xml.write(nombre_xml, encoding="utf-8", xml_declaration=True)
 
 
 @captura_error
@@ -317,6 +375,43 @@ print("l4: ", l4)
         valor = convertir_tipo(valor, formato)
         lista += (valor,)
     return lista
+
+
+@captura_error
+def guardar_lista_xml(elementos, nombre, atributos, valores, formatos="s"):
+    """
+    Guarda una lista de elementos (ver leer_lista_xml.
+
+    Argumentos:
+    - atributos: lista de atributos que tienen TODOS los elementos.
+    - valores: lista de lista de valores. La longitud de valores indica cuantos
+      elementos con el mismo nombre se añaden, y la longitud de cada uno de los
+      elementos de la lista anterior debe ser igual a la de atributos.
+
+    """
+
+    raiz = archivo_xml.getroot()
+    # Comprobamos si la raíz es una lista de etiquetas:
+    if not isinstance(elementos, (list, tuple)):
+        elementos = (elementos,)
+    # Descendemos hasta el elemento del nivel indicado.
+    for etiqueta in elementos:
+        raiz = raiz.find(etiqueta)
+
+    # Eliminamos todos los elementos del mismo nombre.
+    elementos_lista = raiz.findall(nombre)
+    for elemento_lista in elementos_lista:
+        raiz.remove(elemento_lista)
+
+    # Y añadimos los nuevos elementos.
+    for valores_elemento in valores:
+        # Creamos un nuevo elemento donde guardar los atributos.
+        nuevo_elemento = ElementTree.Element(nombre)
+        aux_atributos_xml(nuevo_elemento, atributos,
+                          formatos, valores_elemento)
+        raiz.append(nuevo_elemento)
+    # Y finalmente guardamos el archivo.
+    archivo_xml.write(nombre_xml, encoding="utf-8", xml_declaration=True)
 
 
 # @captura_error
@@ -451,18 +546,75 @@ print("Directorio: ", var)
     return directorio
 
 
-# def guardar_atributos_xml(elementos, atributos, valores):
-#
-#     raiz = archivo_xml.getroot()
-#     # Comprobamos si la raíz es una lista de etiquetas:
-#     if not isinstance(elementos, (list, tuple)):
-#         elementos = (elementos,)
-#     for etiqueta in elementos:
-#         raiz = raiz.find(etiqueta)
-#
-#     if len(atributos) != len(valores):
-#         raise ValueError
-#     N = len(atributos)
-#     for n in range(N):
-#         raiz[atributos[n]] = convertir_tipo_inv(valores[n])
-#     archivo_xml.write(nombre_xml)
+##########################################################################
+
+
+"""
+###############################################################################
+# Archivo prueba.xml
+###############################################################################
+<?xml version='1.0' encoding='utf-8'?>
+<prueba>
+    <elemento1 TAG1="24" TAG2="hola">
+        <elemento2 TAG3="otro" TAG7="más">
+            <elemento3>
+                <elemento4 TAG4="prueba" TAG5="14.2" TAG6="otra">
+                </elemento4>
+            </elemento3>
+        </elemento2>
+    </elemento1>
+</prueba>
+###############################################################################
+
+###############################################################################
+# Archivo prueba.py
+###############################################################################
+abrir_archivo_xml("prueba.xml")
+t1 = leer_atributos_xml("elemento1", "TAG1")
+print("t1: ", t1)
+guardar_atributos_xml("elemento1", "TAG1", "26")
+t1 = leer_atributos_xml("elemento1", "TAG1")
+print("t1: ", t1)
+guardar_atributos_xml("elemento1", "TAG1", 28, "i")
+t1 = leer_atributos_xml("elemento1", "TAG1")
+print("t1: ", t1)
+guardar_atributos_xml("elemento1", "TAG1", "24")
+
+t2 = leer_atributos_xml("elemento1", "TAG1")
+print("t2: ", t2, type(t2))
+t3 = leer_atributos_xml("elemento1", "TAG1", "i")
+print("t2: ", t3, type(t3))
+
+t4 = leer_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"),
+    ("TAG4", "TAG5", "TAG6"), "sf")
+print("t4: ", t4)
+guardar_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"),
+    ("TAG4", "TAG5", "TAG6"),
+    ("cambio", -4.56, "valor"), "sfs")
+t4 = leer_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"),
+    ("TAG4", "TAG5", "TAG6"), "sf")
+print("t4: ", t4)
+guardar_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"),
+    ("TAG4", "TAG5", "TAG6"),
+    ("prueba", "14.2", "otra"), "sfs")
+
+t5 = leer_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"), "TAG5", "f")
+print("t5: ", t5, type(t5))
+t6 = leer_atributos_xml(
+    ("elemento1", "elemento2"), ("TAG3", "TAG7"))
+print("t6: ", t6)
+
+guardar_lista_xml(
+    ("elemento1", "elemento2", "elemento3"),
+    "campo", ("TAG_A", "TAG_B"),
+    (
+        ("uno", "dos"),
+        ("tres", "cuato")
+    ))
+###############################################################################
+"""
