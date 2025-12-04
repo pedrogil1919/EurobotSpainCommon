@@ -1,16 +1,22 @@
 from python_comun import abrir_archivo_xml
-from python_comun import leer_lista_atributos_xml
+from python_comun import leer_atributos_xml
 
 abrir_archivo_xml("prueba.xml")
-l1 = leer_lista_atributos_xml("elemento1", "campo", "TAG1")
-print("l1: ", l1)
-l2 = leer_lista_atributos_xml("elemento1", "campo", ("TAG1", "TAG2"))
-print("l2: ", l2)
-l3 = leer_lista_atributos_xml("elemento1", "campo", ("TAG1", "TAG2"), "is")
-print("l3: ", l3)
-l4 = leer_lista_atributos_xml(("elemento1", "elemento2"), "campo", "TAG2")
-print("l4: ", l4)
-l5 = leer_lista_atributos_xml( ("elemento1", "elemento2"), "campo", "TAG1")
-print("l5: ", l5)
-l6 = leer_lista_atributos_xml( ("elemento1", "elemento2"), "campo", ("TAG1", "TAG2") )
-print("l6: ", l6)
+t1 = leer_atributos_xml("elemento1", "TAG2")
+print("t1: ", t1)
+t11 = leer_atributos_xml("elemento1", ("TAG1",))
+print("t11: ", t11)
+t2 = leer_atributos_xml("elemento1", "TAG1")
+print("t2: ", t2, type(t2))
+t3 = leer_atributos_xml("elemento1", "TAG1", "i")
+print("t2: ", t3, type(t3))
+t4 = leer_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"), 
+    ("TAG4", "TAG5", "TAG6"), "sf")
+print("t4: ", t4)
+t5 = leer_atributos_xml(
+    ("elemento1", "elemento2", "elemento3", "elemento4"), "TAG5", "f")
+print("t5: ", t5, type(t5))
+t6 = leer_atributos_xml(
+    ("elemento1", "elemento2"), ("TAG3", "TAG7"))
+print("t6: ", t6)
