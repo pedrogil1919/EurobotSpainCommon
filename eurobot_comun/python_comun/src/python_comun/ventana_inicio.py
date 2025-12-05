@@ -39,5 +39,5 @@ def crear_ventana_inicio(datos, servidor, fuente):
     y = (alto_pantalla-alto_ventana)/2
     splash_window.geometry("+%i+%i" % (x, y))
     splash_window.update()
-    return splash_window, datos["TIEMPO"]
+    return splash_window
 ################################################################################
