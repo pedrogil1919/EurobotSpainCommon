@@ -69,18 +69,27 @@ def captura_error(funcion_leer_xml):
     return control
 
 
-def abrir_archivo_xml(archivo):
+def abrir_archivo_xml(archivo, guardar=True):
     """
     Abrir y guardar en el módulo el archivo xml de configuración.
+
+    Si guardar es igual a True, el archivo y su nombre se guardan en el módulo
+    para futuras lecturas / escrituras del archivo xml.
+
+    En cualquier caso, se devuelve una referencia al archivo abierto.
 
     """
     global archivo_xml
     global nombre_xml
     try:
-        archivo_xml = ElementTree.parse(archivo)
-        nombre_xml = archivo
+        xml_aux = ElementTree.parse(archivo)
     except ElementTree.ParseError as error:
         raise RuntimeError("Error archivo XML %s: %s." % (archivo, error))
+    if guardar:
+        # Nos solicitan guardar una referencia del archivo.
+        archivo_xml = xml_aux
+        nombre_xml = archivo
+    return xml_aux
 
 
 def txt2bool(valor):
@@ -207,7 +216,7 @@ def aux_atributos_xml(elemento, atributos, formatos=None, valores=None):
 
 
 @captura_error
-def leer_atributos_xml(elementos, atributos, formatos=None):
+def leer_atributos_xml(elementos, atributos, formatos=None, archivo=None):
     """
     Obtiene los atributos de un elemento, 
 
@@ -229,6 +238,8 @@ def leer_atributos_xml(elementos, atributos, formatos=None):
       Si la cadena sólo tiene un carácter, se aplica el mismo formato a todos
       los elementos. Si tiene más caracteres, su longitud debe ser igual a la
       de la variable atributos.
+    - archivo: archivo xml de donde obtener la información. Si es None, se
+      obtiene del archivo previamente abierto con abrir_archivo_xml
 
 ###########################################################################
 # Archivo prueba.xml
@@ -272,7 +283,9 @@ print("t6: ", t6)
 ###########################################################################
 
     """
-    raiz = archivo_xml.getroot()
+    if archivo is None:
+        archivo = archivo_xml
+    raiz = archivo.getroot()
     # Comprobamos si la raíz es una lista de etiquetas:
     if not isinstance(elementos, (list, tuple)):
         elementos = (elementos,)
@@ -303,7 +316,7 @@ def guardar_atributos_xml(elementos, atributos, valores, formatos=None):
 
 
 @captura_error
-def leer_lista_xml(elementos, nombre, atributo, formato="s"):
+def leer_lista_xml(elementos, nombre, atributo, formato="s", archivo=None):
     """
     Lee todos los elmentos con el mismo nombre dentro de otro elemento.
 
@@ -350,7 +363,10 @@ print("l4: ", l4)
 
 
     """
-    raiz = archivo_xml.getroot()
+    if archivo is None:
+        archivo = archivo_xml
+
+    raiz = archivo.getroot()
 
     # Comprobamos si la raíz es una lista de etiquetas:
     if not isinstance(elementos, (list, tuple)):
@@ -415,7 +431,8 @@ def guardar_lista_xml(elementos, nombre, atributos, valores, formatos="s"):
 
 
 # @captura_error
-def leer_lista_atributos_xml(elementos, nombre, atributos, formatos=None):
+def leer_lista_atributos_xml(elementos, nombre, atributos,
+                             formatos=None, archivo=None):
     """
     Similar a leer_lista_xml, pero solicitando más de un atributo.
 
@@ -463,7 +480,9 @@ print("l5: ", l5)
 
 
     """
-    raiz = archivo_xml.getroot()
+    if archivo is None:
+        archivo = archivo_xml
+    raiz = archivo.getroot()
 
     # Comprobamos si la raíz es una lista de etiquetas:
     if not isinstance(elementos, (list, tuple)):
