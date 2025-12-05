@@ -20,8 +20,7 @@ def crear_ventana_inicio(datos, servidor, fuente):
     splash_window = tkinter.Tk()
     # Eliminar los bordes de la ventana y cargar la imagen de inicio.
     splash_window.overrideredirect(True)
-    splash_image = ImageTk.PhotoImage(
-        Image.open(datos["DIRECTORIO"]+datos["IMAGEN"]))
+    splash_image = ImageTk.PhotoImage(Image.open(datos["IMAGEN"]))
     splash_label = tkinter.Label(splash_window, image=splash_image)
     splash_label.pack()
     servidor_label = tkinter.Label(
