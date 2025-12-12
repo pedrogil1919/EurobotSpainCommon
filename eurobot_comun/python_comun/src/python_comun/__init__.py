@@ -17,7 +17,9 @@ from .desplazamiento_tabla import Desplazamiento
 from .formulario_seleccion import abrir_seleccion
 from .funciones_comunes import maximizar_ventana
 from .leer_xml import abrir_archivo_xml
-from .leer_xml import leer_lista_xml, leer_atributos_xml, leer_lista_atributos_xml
+from .leer_xml import leer_atributos_xml, guardar_atributos_xml
 from .leer_xml import leer_directorio_xml
+from .leer_xml import leer_lista_atributos_xml
+from .leer_xml import leer_lista_xml, guardar_lista_xml
 from .tabla import Tabla
 from .ventana_inicio import crear_ventana_inicio
