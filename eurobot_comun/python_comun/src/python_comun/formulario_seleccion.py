@@ -23,7 +23,7 @@ import tkinter
 
 class FormularioSeleccion:
 
-    def __init__(self, ventana, logo_cabecera):
+    def __init__(self, ventana, logo_cabecera, habilitar_guardar):
         """
         Crea el formulario de selección genérico.
 
@@ -32,6 +32,9 @@ class FormularioSeleccion:
           dependiente de esta ventana principal.
         - logo_cabecera: nombre del archivo con la imagen para mostrar en la 
           parte superior del formulario.
+        - habilitar_guardar: indica si el botón de guardar debe aparecer
+          habilitado al iniciar la ventana, o debe aparecer deshabilitado y
+          sólo se habilita si hay algún cambio en la lista.
 
         """
 
@@ -79,9 +82,13 @@ class FormularioSeleccion:
             self.__formulario, command=self.cancelar, text="Cancelar", width=8)
         # Control del botón guardar del formulario. Sólo se habilita una vez
         # se produzca alguna modificación en algún checkbox.
-        self.__modificado = False
-        self.__boton_guardar.config(state="disabled")
-
+        if not habilitar_guardar:
+            # Deshabilitamos el botón de guardar sólo en el caso de que así nos
+            # lo indiquen.
+            self.__modificado = False
+            self.__boton_guardar.config(state="disabled")
+        else:
+            self.__modificado = True
         # Creamos la estructura del formulario mediante grid.
         self.__boton_guardar.grid(row=3, column=1)
         self.__boton_cancelar.grid(row=3, column=3)
@@ -196,7 +203,7 @@ class FormularioSeleccion:
     modificado = property(get_modificado, None, None, None)
 
 
-def abrir_seleccion(ventana, titulo, cabecera, mensaje, datos):
+def abrir_seleccion(ventana, titulo, cabecera, mensaje, datos, habilitar_guardar=False):
     """
     Función principal.
 
@@ -215,13 +222,13 @@ def abrir_seleccion(ventana, titulo, cabecera, mensaje, datos):
       los elementos de la lista. Si el usuario realiza alguna modificación,
       dicha modificación se registra sobre el propio diccionario, por lo
       que debemos revisar esta lista para comprobar la selección realizada.
-
+    - habilitar_guardar: ver constructor.
     Devuelve True si ha habido alguna modificación y el usuario ha pulsado la
     tecla Guardar.
 
     """
     # Crear formulario de selección.
-    seleccion = FormularioSeleccion(ventana, cabecera)
+    seleccion = FormularioSeleccion(ventana, cabecera, habilitar_guardar)
     # Abrir el formulario con los datos a seleccionar.
     formulario = seleccion.abrir(titulo, mensaje, datos)
     # Bloquear la ejecución del código hasta que se cierre la ventana.
