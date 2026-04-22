@@ -378,9 +378,9 @@ print("l4: ", l4)
     lista = ()
     # Obtenemos todos los elementos con el nombre solicitado.
     elementos_lista = raiz.findall(nombre)
-    if len(elementos_lista) == 0:
-        # Si no hay ningún elemento, se trata de un error.
-        raise ValueError
+    # if len(elementos_lista) == 0:
+    #     # Si no hay ningún elemento, se trata de un error.
+    #     raise ValueError
     for campo in elementos_lista:
         try:
             # Comprobamos si existe el tag en dicho elemento.
